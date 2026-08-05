@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Scroll Tracker</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="card">
+      <header class="card__header">
+        <h1 class="card__title">Today's Scroll Tracker</h1>
+        <p class="card__date" id="today-date">--</p>
+      </header>
+
+      <section class="stats">
+        <div class="stat">
+          <div class="stat__icon stat__icon--youtube" aria-hidden="true">▶</div>
+          <div class="stat__info">
+            <span class="stat__label">YouTube Shorts</span>
+            <span class="stat__value" id="youtube-count">0</span>
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="stat__icon stat__icon--instagram" aria-hidden="true">◎</div>
+          <div class="stat__info">
+            <span class="stat__label">Instagram Reels</span>
+            <span class="stat__value" id="instagram-count">0</span>
+          </div>
+        </div>
+
+        <div class="stat stat--total">
+          <div class="stat__icon stat__icon--total" aria-hidden="true">Σ</div>
+          <div class="stat__info">
+            <span class="stat__label">Total</span>
+            <span class="stat__value" id="total-count">0</span>
+          </div>
+        </div>
+
+        <div class="stat stat--time">
+          <div class="stat__icon stat__icon--time" aria-hidden="true">⏱</div>
+          <div class="stat__info">
+            <span class="stat__label">Time Spent</span>
+            <span class="stat__value" id="time-spent">0m</span>
+          </div>
+        </div>
+      </section>
+
+      <footer class="card__footer">
+        <button id="open-dashboard-button" class="dashboard-button" type="button">
+          View Full Analytics →
+        </button>
+        <button id="reset-button" class="reset-button" type="button">
+          Reset Today's Counters
+        </button>
+        <p class="status-message" id="status-message" role="status"></p>
+      </footer>
+    </main>
+
+    <!-- utils.js must load before popup.js because popup.js relies on
+         window.ScrollTrackerUtils -->
+    <script src="utils.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

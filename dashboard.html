@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Scroll Tracker — Analytics</title>
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="page__header">
+        <div>
+          <h1 class="page__title">Scroll Tracker Analytics</h1>
+          <p class="page__subtitle" id="today-date">--</p>
+        </div>
+      </header>
+
+      <!-- Today's snapshot -->
+      <section class="panel">
+        <h2 class="panel__title">Today</h2>
+        <div class="today-stats">
+          <div class="today-stat">
+            <span class="today-stat__label">YouTube Shorts</span>
+            <span class="today-stat__value" id="today-youtube">0</span>
+          </div>
+          <div class="today-stat">
+            <span class="today-stat__label">Instagram Reels</span>
+            <span class="today-stat__value" id="today-instagram">0</span>
+          </div>
+          <div class="today-stat">
+            <span class="today-stat__label">Total</span>
+            <span class="today-stat__value" id="today-total">0</span>
+          </div>
+          <div class="today-stat">
+            <span class="today-stat__label">Time Spent</span>
+            <span class="today-stat__value" id="today-time">0m</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7-day chart -->
+      <section class="panel">
+        <h2 class="panel__title">Last 7 Days</h2>
+        <p class="panel__hint">Total Shorts + Reels watched per day.</p>
+        <canvas id="week-chart" width="640" height="220"></canvas>
+      </section>
+
+      <!-- Time-of-day heatmap -->
+      <section class="panel">
+        <h2 class="panel__title">Time of Day</h2>
+        <p class="panel__hint">
+          When you tend to scroll, based on the last 30 days combined.
+        </p>
+        <div class="heatmap" id="heatmap"></div>
+        <div class="heatmap__labels">
+          <span>12am</span>
+          <span>6am</span>
+          <span>12pm</span>
+          <span>6pm</span>
+          <span>12am</span>
+        </div>
+      </section>
+
+      <!-- Weekly recap / share card -->
+      <section class="panel">
+        <h2 class="panel__title">Weekly Recap</h2>
+        <p class="panel__hint">
+          A shareable snapshot of your last 7 days, compared to the 7 days before.
+        </p>
+        <div class="recap">
+          <canvas
+            id="recap-canvas"
+            class="recap__canvas"
+            width="640"
+            height="640"
+          ></canvas>
+          <button id="download-recap-button" class="download-button" type="button">
+            Download Recap Image
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- utils.js must load before dashboard.js -->
+    <script src="utils.js"></script>
+    <script src="dashboard.js"></script>
+  </body>
+</html>

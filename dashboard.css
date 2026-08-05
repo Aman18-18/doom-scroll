@@ -1,0 +1,169 @@
+/* dashboard.css
+ * ------------------------------------------------------------------
+ * Styling for the full-page analytics dashboard (opened from the
+ * popup's "View Full Analytics" button). Wider layout than the popup
+ * since this has room to breathe as a normal browser tab.
+ * ------------------------------------------------------------------ */
+
+:root {
+  --color-bg: #f9fafb;
+  --color-surface: #ffffff;
+  --color-text: #111827;
+  --color-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-youtube: #ff0033;
+  --color-instagram: #c026d3;
+  --color-total: #2563eb;
+  --color-time: #f59e0b;
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.page__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.page__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.panel__title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.panel__hint {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: var(--color-muted);
+}
+
+/* ---------- Today's stats ---------- */
+
+.today-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.today-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  background: #fafafa;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.today-stat__label {
+  font-size: 11.5px;
+  color: var(--color-muted);
+}
+
+.today-stat__value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* ---------- Chart ---------- */
+
+#week-chart {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+/* ---------- Heatmap ---------- */
+
+.heatmap {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 3px;
+  height: 48px;
+}
+
+.heatmap__cell {
+  border-radius: 4px;
+  background: #eef2ff;
+}
+
+.heatmap__labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+/* ---------- Recap / share card ---------- */
+
+.recap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.recap__canvas {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+}
+
+.download-button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--color-total);
+  border-radius: 999px;
+  transition: background-color 0.15s ease;
+}
+
+.download-button:hover {
+  background: #1d4ed8;
+}
