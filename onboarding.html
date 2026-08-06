@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Welcome to Scroll Tracker</title>
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="onboarding.css" />
+    <!-- Applies the saved theme before anything paints, so there's no flash -->
+    <script src="theme-toggle.js"></script>
+  </head>
+  <body>
+    <main class="onboarding st-fade-in-up">
+      <span class="onboarding__badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 3" />
+        </svg>
+      </span>
+      <h1 class="onboarding__title">Welcome to Scroll Tracker</h1>
+      <p class="onboarding__subtitle">
+        A few quick things before you start scrolling.
+      </p>
+
+      <ul class="onboarding__list">
+        <li style="--st-i: 0">
+          <strong>It counts automatically.</strong>
+          Open YouTube Shorts or Instagram Reels like normal — every
+          new one you watch is counted once, even if you scroll back
+          to something you've already seen.
+        </li>
+        <li style="--st-i: 1">
+          <strong>A small pill appears while you watch.</strong>
+          It shows your running count and time spent, and disappears
+          automatically once you leave Shorts/Reels.
+        </li>
+        <li style="--st-i: 2">
+          <strong>Drag it anywhere, or double-click to hide it.</strong>
+          Your position is remembered. Hiding it brings it back next
+          time you open a new Short or Reel.
+        </li>
+        <li style="--st-i: 3">
+          <strong>Check the toolbar icon</strong>
+          for a live badge of today's total, and click it any time for
+          a quick summary — or open the full Analytics dashboard for
+          charts, trends, and a shareable weekly recap.
+        </li>
+        <li style="--st-i: 4">
+          <strong>You'll get a heads-up</strong>
+          if you cross 50, 100, or 150 for the day.
+        </li>
+      </ul>
+
+      <button id="close-button" class="primary-button" type="button">
+        Got it, let's go
+      </button>
+    </main>
+
+    <script src="onboarding.js"></script>
+  </body>
+</html>

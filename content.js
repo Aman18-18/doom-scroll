@@ -39,6 +39,54 @@
   const isInstagram = location.hostname.includes("instagram.com");
 
   // ------------------------------------------------------------------
+  // Extension context invalidation handling
+  // ------------------------------------------------------------------
+  //
+  // Whenever the extension is reloaded/updated from chrome://extensions
+  // (or unpacked-reloaded during development), any tab that was already
+  // open keeps running its OLD content script — which is now orphaned:
+  // every chrome.* API call it makes throws "Extension context
+  // invalidated." This is expected Chrome behavior, not a bug, but
+  // left unhandled it means every scroll spams a new console error
+  // forever. Instead, we detect it once, clean up everything (timers,
+  // observers, the on-page widget), and stay quiet — a normal page
+  // refresh re-injects a fresh, correctly-connected content script.
+
+  let extensionContextInvalidated = false;
+  const activeIntervalIds = [];
+  let bodyObserverRef = null;
+
+  function isContextInvalidationError(err) {
+    return Boolean(err && String(err.message || err).includes("Extension context invalidated"));
+  }
+
+  /**
+   * Stops every timer/observer this script owns and removes the
+   * on-page widget, then logs a single friendly (not scary) message.
+   * Safe to call more than once — subsequent calls are no-ops.
+   */
+  function handleContextInvalidated() {
+    if (extensionContextInvalidated) return;
+    extensionContextInvalidated = true;
+
+    activeIntervalIds.forEach((id) => clearInterval(id));
+    activeIntervalIds.length = 0;
+    clearTimeout(debounceTimer);
+
+    if (bodyObserverRef) {
+      bodyObserverRef.disconnect();
+      bodyObserverRef = null;
+    }
+
+    const widget = document.getElementById(WIDGET_ID);
+    if (widget) widget.remove();
+
+    console.log(
+      "[Scroll Tracker] The extension was updated/reloaded — refresh this page to keep tracking."
+    );
+  }
+
+  // ------------------------------------------------------------------
   // Guard against overlapping/duplicate processing.
   // ------------------------------------------------------------------
   let isProcessing = false; // simple mutex around the storage read-modify-write
@@ -51,6 +99,7 @@
    * debounce collapses them into a single check.
    */
   function scheduleCheck() {
+    if (extensionContextInvalidated) return;
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(runDetection, 350);
   }
@@ -62,6 +111,7 @@
    * whether we're currently in a Shorts/Reels context.
    */
   async function runDetection() {
+    if (extensionContextInvalidated) return;
     updateWidgetVisibility();
 
     if (isProcessing) return;
@@ -73,7 +123,11 @@
         await handleInstagram();
       }
     } catch (err) {
-      console.error("[Scroll Tracker] Detection error:", err);
+      if (isContextInvalidationError(err)) {
+        handleContextInvalidated();
+      } else {
+        console.error("[Scroll Tracker] Detection error:", err);
+      }
     } finally {
       isProcessing = false;
     }
@@ -246,7 +300,8 @@
    * guarantees we never go more than ~1.5s without noticing a swipe.
    */
   function startInstagramPollingFallback() {
-    setInterval(scheduleCheck, 1500);
+    const intervalId = setInterval(scheduleCheck, 1500);
+    activeIntervalIds.push(intervalId);
   }
 
   // ------------------------------------------------------------------
@@ -286,12 +341,13 @@
    */
   function startUrlPollingFallback() {
     let lastKnownHref = location.href;
-    setInterval(() => {
+    const intervalId = setInterval(() => {
       if (location.href !== lastKnownHref) {
         lastKnownHref = location.href;
         scheduleCheck();
       }
     }, 1000);
+    activeIntervalIds.push(intervalId);
   }
 
   /**
@@ -301,11 +357,11 @@
    * navigation event every time.
    */
   function startDomObserver() {
-    const bodyObserver = new MutationObserver(() => {
+    bodyObserverRef = new MutationObserver(() => {
       scheduleCheck();
     });
 
-    bodyObserver.observe(document.body, {
+    bodyObserverRef.observe(document.body, {
       childList: true,
       subtree: true,
     });
@@ -420,6 +476,36 @@
         opacity: 0.85;
         line-height: 1;
       }
+      #scroll-tracker-onboarding-tooltip {
+        position: fixed;
+        transform: translateX(-50%);
+        z-index: 2147483647;
+        background: #111827;
+        color: #ffffff;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 12.5px;
+        font-weight: 600;
+        padding: 8px 12px;
+        border-radius: 8px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        white-space: nowrap;
+      }
+      #scroll-tracker-onboarding-tooltip.scroll-tracker-onboarding-tooltip--visible {
+        opacity: 1;
+      }
+      #scroll-tracker-onboarding-tooltip::before {
+        content: "";
+        position: absolute;
+        top: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 5px solid #111827;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -427,10 +513,15 @@
   /**
    * Saves the widget's dragged position so it's remembered next time
    * a Short/Reel page loads. Not critical if this fails, so errors
-   * are swallowed (best-effort only).
+   * are swallowed (best-effort only) — except context invalidation,
+   * which triggers the same cleanup as everywhere else.
    */
   function saveWidgetPosition(left, top) {
-    chrome.storage.local.set({ [WIDGET_POSITION_STORAGE_KEY]: { left, top } });
+    try {
+      chrome.storage.local.set({ [WIDGET_POSITION_STORAGE_KEY]: { left, top } });
+    } catch (err) {
+      if (isContextInvalidationError(err)) handleContextInvalidated();
+    }
   }
 
   /**
@@ -438,14 +529,18 @@
    * the default "top center" CSS placement.
    */
   function applySavedWidgetPosition(widget) {
-    chrome.storage.local.get([WIDGET_POSITION_STORAGE_KEY], (result) => {
-      const pos = result[WIDGET_POSITION_STORAGE_KEY];
-      if (pos && typeof pos.left === "number" && typeof pos.top === "number") {
-        widget.style.left = `${pos.left}px`;
-        widget.style.top = `${pos.top}px`;
-        widget.style.transform = "none";
-      }
-    });
+    try {
+      chrome.storage.local.get([WIDGET_POSITION_STORAGE_KEY], (result) => {
+        const pos = result[WIDGET_POSITION_STORAGE_KEY];
+        if (pos && typeof pos.left === "number" && typeof pos.top === "number") {
+          widget.style.left = `${pos.left}px`;
+          widget.style.top = `${pos.top}px`;
+          widget.style.transform = "none";
+        }
+      });
+    } catch (err) {
+      if (isContextInvalidationError(err)) handleContextInvalidated();
+    }
   }
 
   /**
@@ -544,11 +639,70 @@
   function showWidget() {
     const widget = ensureWidgetExists();
     widget.classList.add(WIDGET_VISIBLE_CLASS);
+    maybeShowOnboardingTooltip(widget);
   }
 
   function hideWidget() {
     const widget = document.getElementById(WIDGET_ID);
     if (widget) widget.classList.remove(WIDGET_VISIBLE_CLASS);
+  }
+
+  // ------------------------------------------------------------------
+  // One-time onboarding tooltip
+  // ------------------------------------------------------------------
+  //
+  // The very first time the widget appears (across the extension's
+  // entire lifetime, tracked via a chrome.storage.local flag), show a
+  // brief tooltip pointing out that it's draggable and dismissible.
+  // This is the only place those two behaviors are explained, so
+  // without it they're easy to never discover.
+
+  const ONBOARDING_SEEN_KEY = "scrollTrackerWidgetOnboardingSeen";
+  const ONBOARDING_TOOLTIP_ID = "scroll-tracker-onboarding-tooltip";
+
+  // Guards against checking storage more than once per page load —
+  // the actual "only ever show once" guarantee comes from the
+  // ONBOARDING_SEEN_KEY flag in storage, checked inside.
+  let onboardingCheckStarted = false;
+
+  function maybeShowOnboardingTooltip(widget) {
+    if (onboardingCheckStarted) return;
+    onboardingCheckStarted = true;
+
+    try {
+      chrome.storage.local.get([ONBOARDING_SEEN_KEY], (result) => {
+        if (result[ONBOARDING_SEEN_KEY]) return; // already shown before, ever
+
+        const tooltip = document.createElement("div");
+        tooltip.id = ONBOARDING_TOOLTIP_ID;
+        tooltip.textContent = "Drag me anywhere · Double-click to hide";
+        document.body.appendChild(tooltip);
+
+        const positionTooltip = () => {
+          const rect = widget.getBoundingClientRect();
+          tooltip.style.top = `${rect.bottom + 10}px`;
+          tooltip.style.left = `${rect.left + rect.width / 2}px`;
+        };
+        positionTooltip();
+
+        requestAnimationFrame(() => tooltip.classList.add("scroll-tracker-onboarding-tooltip--visible"));
+
+        setTimeout(() => {
+          tooltip.classList.remove("scroll-tracker-onboarding-tooltip--visible");
+          setTimeout(() => tooltip.remove(), 300);
+        }, 6000);
+
+        // Mark as seen immediately — even if the user navigates away
+        // before the 6s auto-dismiss, it should never show again.
+        try {
+          chrome.storage.local.set({ [ONBOARDING_SEEN_KEY]: true });
+        } catch (err) {
+          if (isContextInvalidationError(err)) handleContextInvalidated();
+        }
+      });
+    } catch (err) {
+      if (isContextInvalidationError(err)) handleContextInvalidated();
+    }
   }
 
   /**
@@ -642,6 +796,7 @@
    * — it's a no-op if nothing has accumulated yet.
    */
   async function flushWatchTime() {
+    if (extensionContextInvalidated) return;
     if (pendingWatchTimeMs <= 0) return;
     const msToFlush = pendingWatchTimeMs;
     pendingWatchTimeMs = 0;
@@ -651,6 +806,10 @@
       Utils.addWatchTime(data, isYoutube ? "youtube" : "instagram", msToFlush);
       await Utils.setStorageData(data);
     } catch (err) {
+      if (isContextInvalidationError(err)) {
+        handleContextInvalidated();
+        return;
+      }
       console.error("[Scroll Tracker] Failed to save watch time:", err);
       // Put it back so we retry on the next flush instead of losing it.
       pendingWatchTimeMs += msToFlush;
@@ -661,16 +820,19 @@
     // Tick every second: only accumulate time while actively watching
     // AND the tab is visible (avoids counting time on a muted/
     // background tab as "watch time").
-    setInterval(() => {
+    const tickIntervalId = setInterval(() => {
+      if (extensionContextInvalidated) return;
       const isActivelyWatching =
         isCurrentlyInShortsOrReelsContext() && document.visibilityState === "visible";
       if (isActivelyWatching) {
         pendingWatchTimeMs += 1000;
       }
     }, 1000);
+    activeIntervalIds.push(tickIntervalId);
 
     // Flush the buffer periodically rather than every tick.
-    setInterval(flushWatchTime, 5000);
+    const flushIntervalId = setInterval(flushWatchTime, 5000);
+    activeIntervalIds.push(flushIntervalId);
 
     // And flush on the way out, best-effort (not guaranteed to
     // complete on every browser, but harmless to attempt).

@@ -433,6 +433,20 @@
   }
 
   /**
+   * Returns every day of data available (full history archive plus
+   * today), merged into one object keyed by "YYYY-MM-DD". Used for
+   * the dashboard's "Export Data" feature — this is the one place
+   * that needs literally everything, not just a recent window.
+   * @returns {Promise<object>}
+   */
+  async function getFullHistoryIncludingToday() {
+    const [todayData, history] = await Promise.all([getStorageData(), getHistory()]);
+    const merged = { ...history };
+    merged[todayData.date] = summarizeForHistory(todayData);
+    return merged;
+  }
+
+  /**
    * Writes Scroll Tracker data to chrome.storage.local.
    * @param {object} data
    * @returns {Promise<void>}
@@ -515,6 +529,7 @@
     getDaysSeries,
     getLast7DaysSeries,
     getHourlyHeatmap,
+    getFullHistoryIncludingToday,
     extractYoutubeShortId,
     extractInstagramReelId,
   };

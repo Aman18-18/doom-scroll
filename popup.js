@@ -8,6 +8,7 @@
 
 (function initPopup() {
   const Utils = window.ScrollTrackerUtils;
+  const Anim = window.ScrollTrackerAnim;
 
   // Cache DOM references once.
   const elements = {
@@ -18,8 +19,14 @@
     timeSpent: document.getElementById("time-spent"),
     resetButton: document.getElementById("reset-button"),
     dashboardButton: document.getElementById("open-dashboard-button"),
+    themeToggleButton: document.getElementById("theme-toggle-button"),
     statusMessage: document.getElementById("status-message"),
   };
+
+  // True until the first render completes — used so the very first
+  // paint sets numbers instantly (no count-up from a blank popup),
+  // while every subsequent update animates smoothly.
+  let hasRenderedOnce = false;
 
   /**
    * Formats "YYYY-MM-DD" into a friendlier, human-readable string,
@@ -44,15 +51,27 @@
 
   /**
    * Updates all visible numbers/text based on the given data object.
+   * Numeric values animate with a count-up on every update after the
+   * first (which renders instantly, so the popup never opens blank).
    */
   function render(data) {
     elements.date.textContent = formatDisplayDate(data.date);
-    elements.youtubeCount.textContent = data.youtubeShorts;
-    elements.instagramCount.textContent = data.instagramReels;
-    elements.totalCount.textContent = data.youtubeShorts + data.instagramReels;
-    elements.timeSpent.textContent = Utils.formatDuration(
-      (data.youtubeWatchTimeMs || 0) + (data.instagramWatchTimeMs || 0)
-    );
+
+    const total = data.youtubeShorts + data.instagramReels;
+    const timeMs = (data.youtubeWatchTimeMs || 0) + (data.instagramWatchTimeMs || 0);
+
+    if (hasRenderedOnce && Anim) {
+      Anim.countUp(elements.youtubeCount, data.youtubeShorts);
+      Anim.countUp(elements.instagramCount, data.instagramReels);
+      Anim.countUp(elements.totalCount, total);
+    } else {
+      elements.youtubeCount.textContent = data.youtubeShorts;
+      elements.instagramCount.textContent = data.instagramReels;
+      elements.totalCount.textContent = total;
+    }
+    elements.timeSpent.textContent = Utils.formatDuration(timeMs);
+
+    hasRenderedOnce = true;
   }
 
   /**
@@ -83,7 +102,8 @@
   /**
    * Handles the Reset button click: clears today's counts (but keeps
    * track of the currently-open video/reel, per resetTodayData()),
-   * re-renders, and gives the user quick feedback.
+   * re-renders, and gives the user quick feedback — including a brief
+   * "success" color pulse on the button itself.
    */
   async function handleResetClick() {
     elements.resetButton.disabled = true;
@@ -91,6 +111,9 @@
       const freshData = await Utils.resetTodayData();
       render(freshData);
       showStatusMessage("Counters reset for today.");
+
+      elements.resetButton.classList.add("is-success");
+      setTimeout(() => elements.resetButton.classList.remove("is-success"), 900);
     } catch (err) {
       console.error("[Scroll Tracker] Failed to reset stats:", err);
       showStatusMessage("Reset failed — please try again.");
@@ -135,5 +158,15 @@
     watchForLiveUpdates();
     elements.resetButton.addEventListener("click", handleResetClick);
     elements.dashboardButton.addEventListener("click", handleOpenDashboardClick);
+
+    if (window.ScrollTrackerTheme) {
+      elements.themeToggleButton.addEventListener("click", () => {
+        window.ScrollTrackerTheme.toggleTheme();
+      });
+    }
+
+    if (Anim) {
+      Anim.revealOnScroll(document.querySelectorAll(".stat.st-reveal"), 60);
+    }
   });
 })();

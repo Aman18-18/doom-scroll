@@ -1,13 +1,15 @@
 /**
  * background.js
  * ------------------------------------------------------------------
- * MV3 service worker. Responsible for two things that content scripts
- * can't do directly:
+ * MV3 service worker. Responsible for three things that content
+ * scripts can't do directly:
  *   1. Keeping a small number badge on the extension's toolbar icon
  *      showing today's total (Shorts + Reels).
  *   2. Firing a one-time desktop notification each time the day's
  *      combined total crosses a milestone (50, 100, 150 — see
  *      Utils.COUNT_MILESTONES).
+ *   3. Opening a one-time welcome page the moment the extension is
+ *      first installed.
  *
  * Service workers can be shut down and restarted by Chrome at any
  * time, so this file avoids holding any state in memory — every
@@ -77,6 +79,15 @@ async function handleDataChange() {
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === "local" && changes[Utils.STORAGE_KEY]) {
     handleDataChange();
+  }
+});
+
+// Show the one-time welcome page right after install (not on updates
+// — chrome.runtime.onInstalled fires for both "install" and "update",
+// so we check the reason to only open it once, ever).
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === "install") {
+    chrome.tabs.create({ url: chrome.runtime.getURL("onboarding.html") });
   }
 });
 

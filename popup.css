@@ -1,22 +1,11 @@
 /* popup.css
  * ------------------------------------------------------------------
- * Clean, minimal styling for the Scroll Tracker popup. No frameworks
- * — plain CSS, using a small set of custom properties for consistent
- * theming.
+ * Popup-specific styling. Design tokens (colors, shadows, radii,
+ * shared keyframes) live in theme.css, loaded before this file — this
+ * file only contains layout and popup-specific details. Every color
+ * here uses a --st-* token so dark mode "just works" via theme.css's
+ * [data-theme="dark"] overrides.
  * ------------------------------------------------------------------ */
-
-:root {
-  --color-bg: #ffffff;
-  --color-text: #1a1a1a;
-  --color-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-youtube: #ff0033;
-  --color-instagram: #c026d3;
-  --color-total: #2563eb;
-  --color-danger: #dc2626;
-  --color-danger-hover: #b91c1c;
-  --radius: 12px;
-}
 
 * {
   box-sizing: border-box;
@@ -24,38 +13,122 @@
 
 body {
   margin: 0;
-  width: 300px;
-  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: var(--color-bg);
-  color: var(--color-text);
+  width: 320px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--st-color-surface);
+  color: var(--st-color-text);
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  padding: 18px;
-  gap: 16px;
+  animation: st-fade-in-up 0.35s var(--st-ease) both;
 }
 
-/* ---------- Header ---------- */
+/* ---------- Hero header ---------- */
 
-.card__header {
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 20px 18px 24px;
+  background: var(--st-gradient-hero);
+  background-size: 160% 160%;
+  animation: st-gradient-drift 8s ease infinite;
+  color: #ffffff;
+}
+
+.hero__orbs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero__orb {
+  background: #ffffff;
+}
+
+.hero__orb--1 {
+  width: 120px;
+  height: 120px;
+  top: -50px;
+  right: -30px;
+}
+
+.hero__orb--2 {
+  width: 90px;
+  height: 90px;
+  bottom: -50px;
+  left: 10px;
+  animation-delay: -4s;
+}
+
+.hero__row {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 12px;
 }
 
-.card__title {
+.hero__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(4px);
+}
+
+.hero__badge svg {
+  width: 19px;
+  height: 19px;
+}
+
+.hero__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero__title {
   margin: 0;
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 16.5px;
+  font-weight: 800;
   letter-spacing: -0.01em;
 }
 
-.card__date {
-  margin: 0;
+.hero__date {
+  margin: 2px 0 0;
   font-size: 12px;
-  color: var(--color-muted);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.hero__theme-toggle {
+  position: relative;
+}
+
+/* Sun/moon crossfade — both icons stacked, one visible at a time
+   based on the current theme, animated with a little rotate+scale. */
+.theme-icon {
+  position: absolute;
+  transition: opacity 0.25s var(--st-ease), transform 0.35s var(--st-ease-spring);
+}
+.theme-icon--sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+.theme-icon--moon {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+[data-theme="dark"] .theme-icon--sun {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+}
+[data-theme="dark"] .theme-icon--moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
 }
 
 /* ---------- Stats list ---------- */
@@ -64,51 +137,61 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 18px;
 }
 
 .stat {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: #fafafa;
+  padding: 11px 13px;
+  border: 1px solid var(--st-color-border);
+  border-radius: var(--st-radius-md);
+  background: var(--st-color-subtle-bg);
+  transition: transform 0.18s var(--st-ease), box-shadow 0.18s var(--st-ease), border-color 0.18s ease;
+}
+
+.stat:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--st-shadow-sm);
+  border-color: color-mix(in srgb, var(--st-color-total) 25%, var(--st-color-border));
 }
 
 .stat--total {
-  background: #eff6ff;
-  border-color: #dbeafe;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--st-color-total) 12%, var(--st-color-surface)) 0%, color-mix(in srgb, var(--st-color-instagram) 10%, var(--st-color-surface)) 100%);
+  border-color: color-mix(in srgb, var(--st-color-total) 20%, var(--st-color-border));
+}
+
+.stat--time {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--st-color-time) 14%, var(--st-color-surface)) 0%, color-mix(in srgb, var(--st-color-time) 6%, var(--st-color-surface)) 100%);
+  border-color: color-mix(in srgb, var(--st-color-time) 22%, var(--st-color-border));
 }
 
 .stat__icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
   border-radius: 50%;
-  font-size: 14px;
-  font-weight: 700;
   color: #ffffff;
+  transition: transform 0.18s var(--st-ease-spring);
 }
 
-.stat__icon--youtube {
-  background: var(--color-youtube);
+.stat:hover .stat__icon {
+  transform: scale(1.08) rotate(-4deg);
 }
 
-.stat__icon--instagram {
-  background: var(--color-instagram);
+.stat__icon svg {
+  width: 16px;
+  height: 16px;
 }
 
-.stat__icon--total {
-  background: var(--color-total);
-}
-
-.stat__icon--time {
-  background: #f59e0b;
-}
+.stat__icon--youtube { background: var(--st-color-youtube); box-shadow: 0 4px 12px color-mix(in srgb, var(--st-color-youtube) 45%, transparent); }
+.stat__icon--instagram { background: var(--st-color-instagram); box-shadow: 0 4px 12px color-mix(in srgb, var(--st-color-instagram) 45%, transparent); }
+.stat__icon--total { background: var(--st-color-total); box-shadow: 0 4px 12px color-mix(in srgb, var(--st-color-total) 45%, transparent); }
+.stat__icon--time { background: var(--st-color-time); box-shadow: 0 4px 12px color-mix(in srgb, var(--st-color-time) 45%, transparent); }
 
 .stat__info {
   display: flex;
@@ -118,76 +201,100 @@ body {
 }
 
 .stat__label {
-  font-size: 12px;
-  color: var(--color-muted);
+  font-size: 11.5px;
+  color: var(--st-color-muted);
 }
 
 .stat__value {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 19px;
+  font-weight: 800;
   line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
 }
 
-/* ---------- Footer / Reset ---------- */
+/* ---------- Footer / buttons ---------- */
 
 .card__footer {
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  gap: 8px;
+  padding: 0 18px 18px;
+}
+
+.dashboard-button,
+.reset-button {
+  position: relative;
+  overflow: hidden;
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 6px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: var(--st-radius-pill);
+  transition: transform 0.12s var(--st-ease), box-shadow 0.18s var(--st-ease), background-color 0.15s ease;
+}
+
+/* Diagonal sheen sweep on hover — classic premium button touch. */
+.dashboard-button::after,
+.reset-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+.dashboard-button:hover::after {
+  left: 130%;
 }
 
 .dashboard-button {
-  appearance: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px 14px;
-  font-size: 13px;
-  font-weight: 600;
   color: #ffffff;
-  background: var(--color-total);
-  border-radius: var(--radius);
-  transition: background-color 0.15s ease;
+  background: var(--st-color-total);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--st-color-total) 40%, transparent);
 }
 
 .dashboard-button:hover {
-  background: #1d4ed8;
+  background: var(--st-color-total-dark);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--st-color-total) 48%, transparent);
 }
 
-.dashboard-button:active {
-  transform: translateY(1px);
+.dashboard-button:active,
+.reset-button:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .reset-button {
-  appearance: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #ffffff;
-  background: var(--color-danger);
-  border-radius: var(--radius);
-  transition: background-color 0.15s ease;
+  color: var(--st-color-danger-dark);
+  background: color-mix(in srgb, var(--st-color-danger) 8%, var(--st-color-surface));
+  border: 1px solid color-mix(in srgb, var(--st-color-danger) 18%, var(--st-color-border));
 }
 
 .reset-button:hover {
-  background: var(--color-danger-hover);
+  background: color-mix(in srgb, var(--st-color-danger) 14%, var(--st-color-surface));
 }
 
-.reset-button:active {
-  transform: translateY(1px);
-}
-
-.reset-button:disabled {
-  opacity: 0.6;
-  cursor: default;
+.reset-button.is-success {
+  color: #16a34a;
+  background: color-mix(in srgb, #22c55e 12%, var(--st-color-surface));
+  border-color: color-mix(in srgb, #22c55e 25%, var(--st-color-border));
+  animation: st-pop-in 0.25s var(--st-ease-spring);
 }
 
 .status-message {
   margin: 0;
   min-height: 14px;
   font-size: 11px;
-  color: var(--color-muted);
+  color: var(--st-color-muted);
   text-align: center;
 }

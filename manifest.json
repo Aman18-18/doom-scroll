@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Scroll Tracker",
-  "version": "1.3.0",
+  "version": "1.6.1",
   "description": "Tracks how many YouTube Shorts and Instagram Reels you watch each day.",
 
   "permissions": ["storage", "notifications"],

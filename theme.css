@@ -1,0 +1,167 @@
+/* theme.css
+ * ------------------------------------------------------------------
+ * Shared design tokens + keyframe animations for popup.html,
+ * dashboard.html, and onboarding.html, so all three read as one
+ * product. Supports light/dark via [data-theme="dark"] on <html>,
+ * toggled instantly (no flash) by theme-toggle.js.
+ * ------------------------------------------------------------------ */
+
+:root {
+  /* Palette (light) */
+  --st-color-bg: #f4f5fa;
+  --st-color-surface: #ffffff;
+  --st-color-text: #111827;
+  --st-color-muted: #6b7280;
+  --st-color-border: #e8eaf0;
+  --st-color-subtle-bg: #fafafa;
+  --st-color-subtle-bg-hover: #f0f1f5;
+
+  --st-color-youtube: #ff0033;
+  --st-color-instagram: #c026d3;
+  --st-color-total: #6366f1;
+  --st-color-total-dark: #4f46e5;
+  --st-color-time: #f59e0b;
+  --st-color-danger: #ef4444;
+  --st-color-danger-dark: #dc2626;
+
+  --st-gradient-hero: linear-gradient(135deg, #6366f1 0%, #a855f7 55%, #ec4899 100%);
+  --st-heatmap-empty: #eef2ff;
+  --st-heatmap-rgb: 37, 99, 235;
+
+  /* Elevation (light) */
+  --st-shadow-sm: 0 1px 3px rgba(17, 24, 39, 0.07);
+  --st-shadow-md: 0 10px 28px rgba(17, 24, 39, 0.10);
+  --st-shadow-lg: 0 18px 44px rgba(17, 24, 39, 0.14);
+  --st-glow: 0 10px 30px rgba(99, 102, 241, 0.18);
+
+  /* Shape */
+  --st-radius-sm: 9px;
+  --st-radius-md: 14px;
+  --st-radius-lg: 20px;
+  --st-radius-pill: 999px;
+
+  /* Motion */
+  --st-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --st-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --st-color-bg: #0b0d14;
+  --st-color-surface: #14161f;
+  --st-color-text: #f2f3f7;
+  --st-color-muted: #9199ab;
+  --st-color-border: #262a37;
+  --st-color-subtle-bg: #1a1d29;
+  --st-color-subtle-bg-hover: #232837;
+
+  --st-color-total: #909bff;
+  --st-color-total-dark: #7b86ff;
+
+  --st-gradient-hero: linear-gradient(135deg, #4338ca 0%, #7e22ce 55%, #be185d 100%);
+  --st-heatmap-empty: #1a1d29;
+  --st-heatmap-rgb: 129, 140, 248;
+
+  --st-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --st-shadow-md: 0 12px 30px rgba(0, 0, 0, 0.45);
+  --st-shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.55);
+  --st-glow: 0 10px 30px rgba(144, 155, 255, 0.22);
+
+  color-scheme: dark;
+}
+
+/* ---------- Shared keyframes ---------- */
+
+@keyframes st-fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes st-pop-in {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes st-value-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+@keyframes st-pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.35); }
+  100% { box-shadow: 0 0 0 14px rgba(99, 102, 241, 0); }
+}
+
+@keyframes st-orb-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-3%, 4%) scale(1.08); }
+}
+
+@keyframes st-gradient-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ---------- Shared utility classes ---------- */
+
+.st-fade-in-up {
+  animation: st-fade-in-up 0.5s var(--st-ease) both;
+}
+
+.st-value-pop {
+  animation: st-value-pop 0.4s var(--st-ease-spring);
+}
+
+/* Elements start hidden via this class, then get "is-visible" added
+   by revealOnScroll() in animations.js once they scroll into view. */
+.st-reveal {
+  opacity: 0;
+  transform: translateY(16px) scale(0.98);
+  transition: opacity 0.55s var(--st-ease), transform 0.55s var(--st-ease);
+}
+.st-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Decorative blurred gradient orbs — drop this element into any
+   relatively-positioned container with position:absolute + overflow
+   hidden on the parent for ambient depth behind hero sections. */
+.st-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.55;
+  pointer-events: none;
+  animation: st-orb-float 9s ease-in-out infinite;
+}
+
+/* Small icon-button used for the theme toggle. */
+.st-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  backdrop-filter: blur(4px);
+  transition: background-color 0.15s ease, transform 0.15s var(--st-ease);
+}
+.st-icon-button:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: scale(1.06);
+}
+.st-icon-button:active {
+  transform: scale(0.94);
+}
+.st-icon-button svg {
+  width: 17px;
+  height: 17px;
+}

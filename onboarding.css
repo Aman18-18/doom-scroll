@@ -1,0 +1,90 @@
+/* onboarding.css
+ * ------------------------------------------------------------------
+ * Styling for the one-time welcome page shown right after install.
+ * Design tokens live in theme.css.
+ * ------------------------------------------------------------------ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--st-color-bg);
+  color: var(--st-color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+.onboarding {
+  max-width: 480px;
+  width: 100%;
+  padding: 56px 28px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.onboarding__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  background: var(--st-gradient-hero);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.32);
+}
+
+.onboarding__badge svg {
+  width: 30px;
+  height: 30px;
+}
+
+.onboarding__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.onboarding__subtitle {
+  margin: 6px 0 28px;
+  font-size: 14px;
+  color: var(--st-color-muted);
+}
+
+.onboarding__list {
+  margin: 0 0 32px;
+  padding: 0;
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.onboarding__list li {
+  background: var(--st-color-surface);
+  border: 1px solid var(--st-color-border);
+  border-radius: var(--st-radius-md);
+  box-shadow: var(--st-shadow-sm);
+  padding: 14px 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #374151;
+  opacity: 0;
+  animation: st-fade-in-up 0.45s var(--st-ease) forwards;
+  animation-delay: calc(var(--st-i, 0) * 90ms);
+}
+
+.onboarding__list li strong {
+  display: block;
+  color: var(--st-color-text);
+  margin-bottom: 2px;
+}
