@@ -233,6 +233,16 @@
     const urlReelId = Utils.extractInstagramReelId(location.href);
     if (urlReelId) return urlReelId;
 
+    // Only fall back to DOM-based detection when the URL itself
+    // confirms we're actually inside the Reels section (the
+    // continuous /reels/ feed, which doesn't put a shortcode in the
+    // URL as you scroll). Without this guard, ANY other full-screen
+    // autoplaying video on Instagram — Stories, Explore previews,
+    // DM video messages — would get misdetected as a Reel, since
+    // they render <video> elements the same way. This is what was
+    // causing Stories views to be counted.
+    if (!isCurrentlyInShortsOrReelsContext()) return null;
+
     const video = findCenteredVideo();
     if (!video) return null;
 
