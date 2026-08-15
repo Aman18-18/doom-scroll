@@ -8,6 +8,12 @@ A lightweight browser extension for tracking how many YouTube Shorts and Instagr
 
 Scroll Tracker helps you become more aware of your short-form video habits by counting the number of videos you watch and showing your daily trends in a simple dashboard.
 
+## Screenshots
+
+![Dashboard View](icons/Screenshot%202026-08-15%20233840.png)
+
+![Usage Tracking View](icons/Screenshot%202026-08-15%20233955.png)
+
 ## Features
 
 - Tracks daily YouTube Shorts and Instagram Reels activity
